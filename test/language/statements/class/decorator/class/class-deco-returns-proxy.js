@@ -16,8 +16,10 @@ function dec(C, context) {
   originalClass = C;
 
   return new Proxy(C, {
-    construct() {
-      return 123;
+    construct(target, args, newTarget) {
+      var instance = Reflect.construct(target, args, newTarget);
+      instance.proxied = true;
+      return instance;
     }
   });
 }
@@ -30,5 +32,6 @@ class C {
 }
 
 assert(C !== originalClass, 'values are not the same');
-assert(C instanceof originalClass, 'value is instance of class');
-assert.sameValue(new C(), 123);
+var instance = new C();
+assert(instance instanceof originalClass, 'instance is instance of original class');
+assert.sameValue(instance.proxied, true, 'proxy construct trap ran');
